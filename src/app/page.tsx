@@ -16,8 +16,8 @@ import {
   Radio,
 } from 'lucide-react';
 import { IndexCard } from '@/components/dashboard/IndexCard';
-import { WorldMap } from '@/components/dashboard/WorldMap';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { GlobalThreatMap } from '@/components/dashboard/GlobalThreatMap';
+import { WorldwideAlerts } from '@/components/dashboard/WorldwideAlerts';
 import { IndicesDeepDive } from '@/components/dashboard/IndicesDeepDive';
 import { IntelligenceFeed } from '@/components/dashboard/IntelligenceFeed';
 import { ForecastCenter } from '@/components/dashboard/ForecastCenter';
@@ -27,6 +27,7 @@ import {
   fetchIndexHistory,
   fetchArticles,
   fetchRegions,
+  fetchForecasts,
   type IndexData,
   type IndexHistoryPoint,
 } from '@/lib/api';
@@ -60,7 +61,12 @@ export default function DashboardPage() {
 
   const { data: recentArticles, isLoading: articlesLoading } = useQuery({
     queryKey: ['articles', 'recent'],
-    queryFn: () => fetchArticles({ limit: 5 }),
+    queryFn: () => fetchArticles({ limit: 20 }),
+  });
+
+  const { data: forecasts } = useQuery({
+    queryKey: ['forecasts'],
+    queryFn: fetchForecasts,
   });
 
   return (
@@ -144,21 +150,21 @@ export default function DashboardPage() {
                       ))}
                 </div>
 
-                {/* World Map + Activity Feed */}
+                {/* Global Threat Map + Worldwide Alerts */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2">
-                    {regionsLoading ? (
-                      <Skeleton className="h-[400px] bg-slate-800" />
-                    ) : regions ? (
-                      <WorldMap regions={regions} />
+                    {(regionsLoading || articlesLoading) ? (
+                      <Skeleton className="h-[500px] bg-slate-800" />
+                    ) : regions && recentArticles ? (
+                      <GlobalThreatMap regions={regions} articles={recentArticles.articles} />
                     ) : null}
                   </div>
                   <div>
-                    {articlesLoading ? (
-                      <Skeleton className="h-[400px] bg-slate-800" />
-                    ) : recentArticles ? (
-                      <ActivityFeed articles={recentArticles.articles} />
-                    ) : null}
+                    {(regionsLoading || articlesLoading || !forecasts) ? (
+                      <Skeleton className="h-[500px] bg-slate-800" />
+                    ) : (
+                      <WorldwideAlerts />
+                    )}
                   </div>
                 </div>
               </motion.div>
