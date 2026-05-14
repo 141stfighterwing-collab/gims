@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  source      String
+  url         String   @unique
+  title       String
+  content     String
+  summary     String
+  whyMatters  String
+  publishedAt DateTime
+  ingestedAt  DateTime @default(now())
+  fingerprint String   @default("")
+  entities    String   @default("[]")
+  tags        String   @default("[]")
+  indexImpact String   @default("{}")
+}
+
+model IndexScore {
+  id            String   @id @default(cuid())
+  indexName     String
+  score         Float
+  calculatedAt  DateTime @default(now())
+  inputSignals  String   @default("{}")
+  decayedScore  Float    @default(0)
+  region        String?
+}
+
+model Forecast {
+  id            String   @id @default(cuid())
+  indexName     String
+  region        String?
+  forecastValue Float
+  method        String
+  horizonDays   Int
+  confidence    Float
+  scenario      String?
+  triggeredAt   DateTime @default(now())
+}
+
+model Region {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  riskScore     Float    @default(0)
+  conflictCount Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
