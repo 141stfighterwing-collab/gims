@@ -14,7 +14,13 @@ export async function GET() {
 
     // Get current index scores
     const indexKeys = getIndexKeys();
-    const indexSummaries = [];
+    const indexSummaries: Array<{
+      name: string;
+      score: number;
+      threshold: ReturnType<typeof getThreshold>;
+      change: number;
+      direction: string;
+    }> = [];
     for (const indexName of indexKeys) {
       const latest = await db.indexScore.findFirst({
         where: { indexName },

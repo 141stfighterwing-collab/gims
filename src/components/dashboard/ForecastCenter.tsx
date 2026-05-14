@@ -65,26 +65,22 @@ export function ForecastCenter() {
   }, []);
 
   // Chart data: confidence by method
-  const methodChartData = forecasts.reduce<Record<string, { method: string; confidence: number; count: number; color: string }[]>>(
-    (acc, f) => {
-      const existing = acc[f.method] ?? [];
-      const idx = existing.findIndex((e) => e.method === f.method);
-      if (idx >= 0) {
-        existing[idx].count += 1;
-      } else {
-        existing.push({
-          method: f.method,
-          confidence: f.confidence,
-          count: 1,
-          color: methodColors[f.method] ?? '#64748b',
-        });
-      }
-      acc[f.method] = existing;
-      return acc;
-    },
-    {}
-  );
-  const chartData = Object.values(methodChartData).map((d) => ({
+  const methodMap = new Map<string, { method: string; confidence: number; count: number; color: string }>();
+  for (const f of forecasts) {
+    const existing = methodMap.get(f.method);
+    if (existing) {
+      existing.count += 1;
+      existing.confidence = Math.max(existing.confidence, f.confidence);
+    } else {
+      methodMap.set(f.method, {
+        method: f.method,
+        confidence: f.confidence,
+        count: 1,
+        color: methodColors[f.method] ?? '#64748b',
+      });
+    }
+  }
+  const chartData = Array.from(methodMap.values()).map((d) => ({
     method: d.method.replace(/ /g, '\n'),
     confidence: d.confidence * 100,
     color: d.color,

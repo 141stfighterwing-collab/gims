@@ -5,7 +5,14 @@ import { getThreshold, getIndexName, getIndexKeys } from '@/lib/scoring-engine';
 export async function GET() {
   try {
     const indexKeys = getIndexKeys();
-    const results = [];
+    const results: Array<{
+      key: string;
+      name: string;
+      score: number;
+      threshold: ReturnType<typeof getThreshold>;
+      trend: number;
+      calculatedAt: Date | null;
+    }> = [];
 
     for (const indexName of indexKeys) {
       const latest = await db.indexScore.findFirst({

@@ -63,7 +63,6 @@ const tagColors: Record<string, string> = {
   'india': 'bg-orange-900/50 text-orange-300 border-orange-700/50',
   'pakistan': 'bg-amber-900/50 text-amber-300 border-amber-700/50',
   'kashmir': 'bg-yellow-900/50 text-yellow-300 border-yellow-700/50',
-  'nuclear': 'bg-red-900/50 text-red-300 border-red-700/50',
   'south-asia': 'bg-orange-900/50 text-orange-300 border-orange-700/50',
   'arctic': 'bg-sky-900/50 text-sky-300 border-sky-700/50',
   'militarization': 'bg-red-900/50 text-red-300 border-red-700/50',
