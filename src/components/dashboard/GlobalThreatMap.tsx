@@ -1,11 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { RegionData, ArticleData } from '@/lib/api';
-import { Pause, Play, RotateCcw, Maximize2, MapPin, AlertTriangle, Crosshair } from 'lucide-react';
+import { Pause, Play, RotateCcw, MapPin, Crosshair } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface ThreatMarker {
@@ -260,9 +257,9 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
 
     // ── Atmosphere glow ──
     const atmosGrad = ctx.createRadialGradient(cx, cy, radius * 0.95, cx, cy, radius * 1.2);
-    atmosGrad.addColorStop(0, 'rgba(56,130,220,0.08)');
-    atmosGrad.addColorStop(0.5, 'rgba(56,130,220,0.03)');
-    atmosGrad.addColorStop(1, 'rgba(56,130,220,0)');
+    atmosGrad.addColorStop(0, 'rgba(0,188,212,0.08)');
+    atmosGrad.addColorStop(0.5, 'rgba(0,188,212,0.03)');
+    atmosGrad.addColorStop(1, 'rgba(0,188,212,0)');
     ctx.fillStyle = atmosGrad;
     ctx.fillRect(0, 0, W, H);
 
@@ -277,14 +274,14 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
     ctx.fill();
 
     // Globe border ring
-    ctx.strokeStyle = 'rgba(56,130,220,0.15)';
+    ctx.strokeStyle = 'rgba(0,188,212,0.15)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     const rotation = rotationRef.current;
 
     // ── Grid lines (latitude / longitude) ──
-    ctx.strokeStyle = 'rgba(56,130,220,0.06)';
+    ctx.strokeStyle = 'rgba(0,188,212,0.06)';
     ctx.lineWidth = 0.5;
     // Latitude lines
     for (let lat = -60; lat <= 60; lat += 30) {
@@ -333,7 +330,7 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
           lastVisible = false;
         }
       }
-      ctx.strokeStyle = 'rgba(100,160,255,0.12)';
+      ctx.strokeStyle = 'rgba(0,188,212,0.12)';
       ctx.lineWidth = 0.8;
       ctx.stroke();
 
@@ -349,7 +346,7 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
         }
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(100,160,255,0.03)';
+      ctx.fillStyle = 'rgba(0,188,212,0.03)';
       ctx.fill();
     }
 
@@ -613,40 +610,34 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
     : [];
 
   return (
-    <Card className="bg-slate-800/60 border-slate-700/50 overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <Crosshair className="h-4 w-4 text-red-400" />
-            Global Threat Map
-          </CardTitle>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-700"
-              onClick={() => setIsSpinning((s) => !s)}
-              title={isSpinning ? 'Pause rotation' : 'Resume rotation'}
-            >
-              {isSpinning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-700"
-              onClick={() => {
-                rotationRef.current = 0;
-                setIsSpinning(true);
-                setSelectedMarker(null);
-              }}
-              title="Reset view"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+    <div className="gims-panel overflow-hidden h-full flex flex-col">
+      <div className="flex items-center justify-between p-4 pb-2">
+        <div className="flex items-center gap-2">
+          <Crosshair className="h-4 w-4 text-[#00bcd4]" />
+          <h3 className="gims-panel-header">Global Threat Map</h3>
         </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
+        <div className="flex items-center gap-1.5">
+          <button
+            className="h-7 w-7 flex items-center justify-center text-[#4a5568] hover:text-white hover:bg-[#1e2633] rounded-md transition-all"
+            onClick={() => setIsSpinning((s) => !s)}
+            title={isSpinning ? 'Pause rotation' : 'Resume rotation'}
+          >
+            {isSpinning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            className="h-7 w-7 flex items-center justify-center text-[#4a5568] hover:text-white hover:bg-[#1e2633] rounded-md transition-all"
+            onClick={() => {
+              rotationRef.current = 0;
+              setIsSpinning(true);
+              setSelectedMarker(null);
+            }}
+            title="Reset view"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 px-4 pb-4 pt-0">
         <div className="relative w-full" style={{ paddingBottom: '56%' }}>
           <canvas
             ref={canvasRef}
@@ -661,15 +652,14 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
 
           {/* Selected marker info panel */}
           {selectedMarker && (
-            <div className="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur-sm border border-slate-700/60 rounded-lg p-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="absolute bottom-3 left-3 right-3 bg-[#0a0e17]/90 backdrop-blur-sm border border-[#1e2633] rounded-md p-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-3.5 w-3.5" style={{ color: SEVERITY_COLORS[selectedMarker.severity].fill }} />
                   <span className="text-sm font-semibold text-white">{selectedMarker.label}</span>
                 </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-bold border"
+                <span
+                  className="text-[10px] font-bold border rounded px-1.5 py-0.5"
                   style={{
                     color: SEVERITY_COLORS[selectedMarker.severity].fill,
                     borderColor: SEVERITY_COLORS[selectedMarker.severity].fill,
@@ -677,22 +667,22 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
                   }}
                 >
                   {selectedMarker.severity.toUpperCase()} - {selectedMarker.riskScore.toFixed(0)}
-                </Badge>
+                </span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+              <div className="flex items-center gap-3 text-[11px] text-[#7b8ca8]">
                 <span>Region: {selectedMarker.region}</span>
-                <span>|</span>
+                <span className="text-[#1e2633]">|</span>
                 <span>{selectedMarker.eventCount} active events</span>
-                <span>|</span>
-                <span>
+                <span className="text-[#1e2633]">|</span>
+                <span className="font-tactical">
                   {selectedMarker.lat.toFixed(1)}, {selectedMarker.lng.toFixed(1)}
                 </span>
               </div>
               {regionArticles.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-slate-700/40">
-                  <p className="text-[10px] text-slate-500 mb-1">RELATED INTELLIGENCE</p>
+                <div className="mt-2 pt-2 border-t border-[#1e2633]">
+                  <p className="text-[10px] text-[#4a5568] mb-1">RELATED INTELLIGENCE</p>
                   {regionArticles.slice(0, 2).map((a) => (
-                    <p key={a.id} className="text-[11px] text-slate-300 line-clamp-1 hover:text-white cursor-pointer">
+                    <p key={a.id} className="text-[11px] text-[#7b8ca8] line-clamp-1 hover:text-white cursor-pointer">
                       &bull; {a.title}
                     </p>
                   ))}
@@ -703,8 +693,8 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
 
           {/* Spin indicator */}
           {isSpinning && (
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] text-slate-500 bg-slate-900/60 backdrop-blur-sm rounded-full px-2 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] text-[#4a5568] bg-[#0a0e17]/60 backdrop-blur-sm rounded-full px-2 py-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00bcd4] animate-pulse" />
               LIVE TRACKING
             </div>
           )}
@@ -715,13 +705,13 @@ export function GlobalThreatMap({ regions, articles }: GlobalThreatMapProps) {
           {Object.entries(SEVERITY_COLORS).map(([label, { fill }]) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: fill, boxShadow: `0 0 6px ${fill}` }} />
-              <span className="text-[10px] text-slate-400 capitalize">{label}</span>
+              <span className="text-[10px] text-[#7b8ca8] capitalize">{label}</span>
             </div>
           ))}
-          <span className="text-[10px] text-slate-600">|</span>
-          <span className="text-[10px] text-slate-500">Click markers for details | Drag to rotate</span>
+          <span className="text-[10px] text-[#1e2633]">|</span>
+          <span className="text-[10px] text-[#4a5568]">Click markers for details | Drag to rotate</span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

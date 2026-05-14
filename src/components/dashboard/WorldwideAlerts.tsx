@@ -1,13 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { fetchArticles, fetchRegions, fetchIndices, fetchForecasts, type ArticleData, type RegionData, type IndexData, type ForecastData } from '@/lib/api';
 import {
-  AlertTriangle,
   Radio,
   Flame,
   Zap,
@@ -16,10 +12,8 @@ import {
   Clock,
   ShieldAlert,
   TrendingUp,
-  ArrowUpRight,
   Crosshair,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 // ── Worldwide Alert Item ──────────────────────────────────────────────────
 interface WorldwideAlert {
@@ -35,40 +29,40 @@ interface WorldwideAlert {
 
 const ALERT_STYLES: Record<string, { bg: string; border: string; text: string; iconBg: string; pulse: string }> = {
   critical: {
-    bg: 'bg-red-950/40',
-    border: 'border-red-800/50',
-    text: 'text-red-300',
-    iconBg: 'bg-red-600/20',
-    pulse: 'bg-red-500',
+    bg: 'bg-[#1a0f10]',
+    border: 'border-[#3b1a1a]',
+    text: 'text-[#f44336]',
+    iconBg: 'bg-[#f44336]/15',
+    pulse: 'bg-[#f44336]',
   },
   escalation: {
-    bg: 'bg-orange-950/30',
-    border: 'border-orange-800/40',
-    text: 'text-orange-300',
-    iconBg: 'bg-orange-600/20',
-    pulse: 'bg-orange-500',
+    bg: 'bg-[#1a150d]',
+    border: 'border-[#3b2a15]',
+    text: 'text-[#ff9800]',
+    iconBg: 'bg-[#ff9800]/15',
+    pulse: 'bg-[#ff9800]',
   },
   threat: {
-    bg: 'bg-amber-950/30',
-    border: 'border-amber-800/30',
-    text: 'text-amber-300',
-    iconBg: 'bg-amber-600/20',
-    pulse: 'bg-amber-500',
+    bg: 'bg-[#1a1610]',
+    border: 'border-[#2a2518]',
+    text: 'text-[#eab308]',
+    iconBg: 'bg-[#eab308]/15',
+    pulse: 'bg-[#eab308]',
   },
   watch: {
-    bg: 'bg-blue-950/30',
-    border: 'border-blue-800/30',
-    text: 'text-blue-300',
-    iconBg: 'bg-blue-600/20',
-    pulse: 'bg-blue-500',
+    bg: 'bg-[#0f1520]',
+    border: 'border-[#1a2535]',
+    text: 'text-[#00bcd4]',
+    iconBg: 'bg-[#00bcd4]/15',
+    pulse: 'bg-[#00bcd4]',
   },
 };
 
 const ALERT_ICONS = {
   critical: ShieldAlert,
   escalation: Flame,
-  threat: AlertTriangle,
-  watch: Crosshair,
+  threat: Crosshair,
+  watch: TrendingUp,
 };
 
 // ── Build worldwide alerts from data ─────────────────────────────────────
@@ -157,12 +151,6 @@ function buildWorldwideAlerts(
 // ── Main Component ────────────────────────────────────────────────────────
 export function WorldwideAlerts() {
   const [filter, setFilter] = useState<'all' | 'critical' | 'escalation' | 'threat' | 'watch'>('all');
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 30000);
-    return () => clearInterval(timer);
-  }, []);
 
   const { data: articles } = useQuery({
     queryKey: ['articles', 'all'],
@@ -198,129 +186,128 @@ export function WorldwideAlerts() {
   const escalationCount = alerts.filter((a) => a.type === 'escalation').length;
   const totalHigh = criticalCount + escalationCount;
 
+  function formatTimeAgo(timeStr: string): string {
+    const now = Date.now();
+    const then = new Date(timeStr).getTime();
+    const diffMin = Math.floor((now - then) / 60000);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    return `${Math.floor(diffHr / 24)}d ago`;
+  }
+
   return (
-    <Card className="bg-slate-800/60 border-slate-700/50 h-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <Radio className="h-4 w-4 text-red-400" />
-            Worldwide Alerts
-          </CardTitle>
-          <div className="flex items-center gap-1.5">
-            <Badge className="bg-red-600/20 text-red-400 border-red-800/40 text-[10px] px-1.5 py-0">
-              {criticalCount} CRITICAL
-            </Badge>
-            <Badge className="bg-orange-600/20 text-orange-400 border-orange-800/40 text-[10px] px-1.5 py-0">
-              {escalationCount} ESCALATION
-            </Badge>
+    <div className="gims-panel h-full flex flex-col">
+      {/* Header */}
+      <div className="p-4 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Radio className="h-4 w-4 text-[#f44336]" />
+            <h3 className="gims-panel-header">Active Incidents</h3>
+            <span className="ml-1 text-[10px] font-bold text-[#f44336] bg-[#f44336]/15 px-1.5 py-0.5 rounded">
+              {alerts.length}
+            </span>
           </div>
         </div>
 
         {/* Filter buttons */}
-        <div className="flex items-center gap-1 mt-2">
+        <div className="flex items-center gap-1">
           {(['all', 'critical', 'escalation', 'threat', 'watch'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-[10px] px-2 py-0.5 rounded-md transition-all ${
+              className={`text-[10px] px-2 py-0.5 rounded transition-all ${
                 filter === f
-                  ? 'bg-slate-600/80 text-white'
-                  : 'bg-slate-700/30 text-slate-500 hover:text-slate-300'
+                  ? 'bg-[#1e2633] text-[#00bcd4]'
+                  : 'text-[#4a5568] hover:text-[#7b8ca8]'
               }`}
             >
-              {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              {f === 'all' ? 'ALL' : f.toUpperCase()}
               {f !== 'all' && (
                 <span className="ml-1 text-[9px] opacity-60">
-                  ({alerts.filter((a) => a.type === f).length})
+                  {alerts.filter((a) => a.type === f).length}
                 </span>
               )}
             </button>
           ))}
         </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        {/* Status bar */}
-        <div className="flex items-center gap-2 mb-3 p-2 rounded-md bg-slate-900/50 border border-slate-700/30">
-          <Zap className="h-3.5 w-3.5 text-amber-400" />
-          <span className="text-[11px] text-slate-400">
-            <span className="text-white font-semibold">{alerts.length}</span> active alerts tracked
+      </div>
+
+      {/* Status bar */}
+      <div className="mx-4 mb-2 p-2 rounded bg-[#0a0e17] border border-[#1e2633]">
+        <div className="flex items-center gap-2">
+          <Zap className="h-3 w-3 text-[#ff9800]" />
+          <span className="text-[10px] text-[#7b8ca8]">
+            <span className="text-white font-semibold">{alerts.length}</span> tracked
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="text-[11px] text-slate-400">
-            <span className="text-red-400 font-semibold">{totalHigh}</span> require immediate attention
+          <span className="text-[#1e2633]">|</span>
+          <span className="text-[10px] text-[#7b8ca8]">
+            <span className="text-[#f44336] font-semibold">{totalHigh}</span> priority
           </span>
         </div>
+      </div>
 
-        {/* Alert list */}
-        <div className="space-y-2 max-h-[420px] overflow-y-auto custom-scrollbar pr-1">
-          {filtered.length === 0 && (
-            <div className="text-center py-8 text-slate-500 text-sm">No alerts matching filter</div>
-          )}
+      {/* Alert list */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4">
+        {filtered.length === 0 && (
+          <div className="text-center py-8 text-[#4a5568] text-sm">No alerts matching filter</div>
+        )}
 
-          {filtered.map((alert, idx) => {
-            const style = ALERT_STYLES[alert.type];
-            const Icon = ALERT_ICONS[alert.icon];
-            const timeAgo = formatDistanceToNow(new Date(alert.time), { addSuffix: true });
+        {filtered.map((alert) => {
+          const style = ALERT_STYLES[alert.type];
+          const Icon = ALERT_ICONS[alert.icon];
+          const timeAgo = formatTimeAgo(alert.time);
 
-            return (
-              <div
-                key={alert.id}
-                className={`${style.bg} ${style.border} border rounded-lg p-3 transition-all hover:scale-[1.01] cursor-pointer group`}
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                <div className="flex items-start gap-2.5">
-                  {/* Icon */}
-                  <div className={`shrink-0 p-1.5 rounded-md ${style.iconBg} mt-0.5`}>
-                    <Icon className={`h-3.5 w-3.5 ${style.text}`} />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className={`text-xs font-semibold ${style.text} line-clamp-2 leading-snug`}>
-                        {alert.title}
-                      </h4>
-                      {alert.type === 'critical' && (
-                        <span className={`shrink-0 w-2 h-2 rounded-full ${style.pulse} animate-pulse mt-1`} />
-                      )}
-                    </div>
-
-                    <p className="text-[10px] text-slate-400 line-clamp-2 leading-relaxed mb-2">
-                      {alert.description}
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="text-[9px] px-1.5 py-0 border-slate-700/50 text-slate-400 bg-slate-800/50"
-                      >
-                        <Globe className="h-2.5 w-2.5 mr-1" />
-                        {alert.region}
-                      </Badge>
-                      <span className="text-[9px] text-slate-500 flex items-center gap-1">
-                        <Clock className="h-2.5 w-2.5" />
-                        {timeAgo}
-                      </span>
-                      {alert.severity >= 80 && (
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] px-1.5 py-0 border-red-800/40 text-red-400 bg-red-950/30"
-                        >
-                          <TrendingUp className="h-2.5 w-2.5 mr-0.5" />
-                          {alert.severity.toFixed(0)}%
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Arrow */}
-                  <ChevronRight className="h-3.5 w-3.5 text-slate-600 shrink-0 mt-1 group-hover:text-slate-400 transition-colors" />
+          return (
+            <div
+              key={alert.id}
+              className={`${style.bg} ${style.border} border rounded p-2.5 mb-2 transition-all hover:border-[#2a3548] cursor-pointer group`}
+            >
+              <div className="flex items-start gap-2">
+                {/* Icon */}
+                <div className={`shrink-0 p-1 rounded ${style.iconBg} mt-0.5`}>
+                  <Icon className={`h-3 w-3 ${style.text}`} />
                 </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-0.5">
+                    <h4 className={`text-[11px] font-semibold ${style.text} line-clamp-2 leading-snug`}>
+                      {alert.title}
+                    </h4>
+                    {alert.type === 'critical' && (
+                      <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${style.pulse} animate-pulse mt-1.5`} />
+                    )}
+                  </div>
+
+                  <p className="text-[10px] text-[#4a5568] line-clamp-1 leading-relaxed mb-1.5">
+                    {alert.description}
+                  </p>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] text-[#4a5568] flex items-center gap-1">
+                      <Globe className="h-2.5 w-2.5" />
+                      {alert.region}
+                    </span>
+                    <span className="text-[9px] text-[#4a5568] flex items-center gap-1 font-tactical">
+                      <Clock className="h-2.5 w-2.5" />
+                      {timeAgo}
+                    </span>
+                    {alert.severity >= 80 && (
+                      <span className="text-[9px] text-[#f44336] font-bold font-tactical">
+                        {alert.severity.toFixed(0)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <ChevronRight className="h-3 w-3 text-[#1e2633] shrink-0 mt-1 group-hover:text-[#4a5568] transition-colors" />
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
